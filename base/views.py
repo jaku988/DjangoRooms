@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from .forms import RoomForm
+from .models import Room, Topic
+
 
 def login_page(request):
     page = 'login'
@@ -26,7 +29,6 @@ def login_page(request):
         'err_message': err_message,
     }
     return render(request, 'base/login_page.html', context)
-
 
 def register_page(request):
     page = 'register'
@@ -54,7 +56,92 @@ def logout_page(request):
     logout(request)
     return redirect("home")
 
-
 #strona startowa aplikacji
 def home(request):
-    return render(request, 'base/home.html')
+
+    rooms = Room.objects.all()
+    topics = Topic.objects.all()
+    print(topics)
+
+    context = {
+        'rooms': rooms,
+        'topics': topics,
+    }
+    return render(request, 'base/home.html', context)
+
+@login_required(login_url='login_page')
+def create_room(request):
+    if request.method == 'POST':
+        form = RoomForm(request.POST)
+        if form.is_valid():
+            room = form.save(commit=False)
+            return redirect("home")
+    else:
+        form = RoomForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'base/create_room.html', context)
+
+
+
+def room(request, pk):
+    room = Room.objects.get(id=pk)
+    messages = room.message_set.all()
+    participants = room.participants.all()
+
+    context = {
+        'room': room,
+        'messages': messages,
+        'participants': participants,
+    }
+    return render(request, 'base/room_page.html', context)
+
+
+@login_required(login_url='login_page')
+def create_room(request):
+    if request.method == 'POST':
+        form = RoomForm(request.POST)
+        if form.is_valid():
+            room = form.save(commit=False)
+            room.host = request.user
+            room.save()
+            room.participants.set([request.user])
+            room.save()
+            return redirect("home")
+    else:
+        form = RoomForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'base/create_room.html', context)
+
+@login_required(login_url='login_page')
+def edit_room(request, pk):
+    room = Room.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = RoomForm(request.POST, instance=room)
+        if form.is_valid():
+            room = form.save()
+            return redirect("home")
+    else:
+        form = RoomForm(instance=room)
+
+    context = {
+        'form': form,
+    }
+    return render(request, "base/create_room.html", context)
+
+@login_required(login_url='login_page')
+def delete_room(request, pk):
+    room = Room.objects.get(id=pk)
+    if request.method == 'POST':
+        room.delete()
+        return redirect("home")
+    context = {
+        'room': room,
+    }
+    return render(request, 'base/delete_room.html', context)
+
+
