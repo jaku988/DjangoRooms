@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from .forms import RoomForm
 from .models import Room, Topic
@@ -56,12 +57,17 @@ def logout_page(request):
     logout(request)
     return redirect("home")
 
-#strona startowa aplikacji
 def home(request):
 
     rooms = Room.objects.all()
     topics = Topic.objects.all()
-    print(topics)
+
+    q = request.GET.get('q') if request.GET.get('q') else ''
+
+    if q:
+        rooms = rooms.filter(Q(name__icontains=q) |
+                             Q(topic__name__icontains=q)|
+                             Q(host__username__icontains=q))
 
     context = {
         'rooms': rooms,
@@ -84,8 +90,6 @@ def create_room(request):
     }
     return render(request, 'base/create_room.html', context)
 
-
-
 def room(request, pk):
     room = Room.objects.get(id=pk)
     messages = room.message_set.all()
@@ -97,7 +101,6 @@ def room(request, pk):
         'participants': participants,
     }
     return render(request, 'base/room_page.html', context)
-
 
 @login_required(login_url='login_page')
 def create_room(request):
