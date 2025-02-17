@@ -6,7 +6,27 @@
     @{{ room.host.username }}<br>
     <h2>{{ room.name }}</h2>
     <p>{{ room.description }}</p>
-
 </div>
+<div>
+    <h2>Discussion:</h2>
+    <span>
+        {% if request.user.is_authenticated %}
+        <form method="post">
+            {% csrf_token %}
+            <input type='text' name="msg_body" placeholder="Write your messages here..." />
+        </form>
+        {% endif %}
+    </span>
+</div>
+<div>
+    {% for message in messages %}
+        <div>
+            <b>@{{ message.user.username }}</b> - {{ message.created }}<br>
+            <p>{{ message.body }}</p>
+            <hr>
+        </div>
+    {% endfor %}
+</div>
+
 
 {% endblock content %}

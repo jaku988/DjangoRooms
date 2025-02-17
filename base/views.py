@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from .forms import RoomForm
-from .models import Room, Topic
+from .models import Room, Topic, Message
 
 
 def login_page(request):
@@ -47,7 +47,7 @@ def register_page(request):
         form = UserCreationForm()
 
     context = {
-        'page': page,
+        'page' : page,
         'form' : form,
     }
     return render(request, 'base/login_page.html', context)
@@ -92,8 +92,15 @@ def create_room(request):
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    messages = room.message_set.all()
+    messages = room.message_set.all().order_by('-created')
     participants = room.participants.all()
+
+    if request.method == 'POST':
+        message_body = request.POST.get('msg_body')
+        if message_body:
+            message = Message(room=room, user=request.user, body=message_body)
+            message.save()
+            return redirect('room', pk=room.id)
 
     context = {
         'room': room,
@@ -146,5 +153,3 @@ def delete_room(request, pk):
         'room': room,
     }
     return render(request, 'base/delete_room.html', context)
-
-
