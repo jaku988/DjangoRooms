@@ -34,15 +34,23 @@
                     {% if request.user == room.host %}
                         <a href="{% url 'edit_room' room.id %}">Edit Room</a>
                         <a href="{% url 'delete_room' room.id %}">Delete Room</a>
-                        <hr>
                     {% endif %}
+                    <hr>
                 </div>
             {% endfor %}
         </div>
     </div>
 
     <div class="activity-container">
-
+        <div>
+            {% for message in messages %}
+                <div>
+                    <b>@{{ message.user.username }} {{ message.created|timesince }} ago:</b>
+                    <p>{{ message.body }}</p><b>to room: <a href="{% url 'room' message.room.id %}">{{ message.room.name }}</a></b>
+                    <hr>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 

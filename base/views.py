@@ -61,6 +61,7 @@ def home(request):
 
     rooms = Room.objects.all()
     topics = Topic.objects.all()
+    messages = Message.objects.all().order_by('-created')
 
     q = request.GET.get('q') if request.GET.get('q') else ''
 
@@ -72,6 +73,7 @@ def home(request):
     context = {
         'rooms': rooms,
         'topics': topics,
+        'messages' : messages,
     }
     return render(request, 'base/home.html', context)
 
