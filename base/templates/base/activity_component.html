@@ -2,7 +2,7 @@
 <div>
     {% for message in messages %}
         <div>
-            <b>@{{ message.user.username }} {{ message.created|timesince }} ago:</b>
+            <b><a href="{% url 'user_profile' message.user.id %}">@{{ message.user.username }}</a> {{ message.created|timesince }} ago:</b>
             <p>{{ message.body }}</p><b>to room: <a href="{% url 'room' message.room.id %}">{{ message.room.name }}</a></b>
             <hr>
         </div>

@@ -1,4 +1,5 @@
 <H2>Rooms:</H2>
+<h4>{{ rooms.count }} Rooms available</h4>
 {% if request.user.is_authenticated %}
     <div>
         <h3><a href="{% url 'create_room' %}">Create Room</a></h3>
@@ -8,7 +9,7 @@
 <div>
     {% for room in rooms %}
         <div>
-            <small>@{{ room.host.username }}</small><br>
+            <a href="{% url 'user_profile' room.host.id %}">@{{ room.host.username }}</a><br>
             <span>{{ room.topic }}</span><br>
             <h3><b>{{ room.id }} --- <a href="{% url 'room' room.id %}">{{ room.name }}</a></b></h3>
             {% if request.user == room.host %}

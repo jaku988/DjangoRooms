@@ -29,7 +29,7 @@
                     {% if message.user == request.user %}
                         <a href="{% url 'delete_message' message.id %}">Delete</a>
                     {% endif %}
-                    <b>@{{ message.user.username }}</b> - {{ message.created }}<br>
+                    <b><a href="{% url 'user_profile' message.user.id %}">@{{ message.user.username }}</a></b> - {{ message.created }}<br>
                     <p>{{ message.body }}</p>
                     <hr>
                 </div>
@@ -41,7 +41,7 @@
         <h2>Participants</h2>
         <hr>
         {% for participant in participants %}
-            <b>@{{ participant.username }}</b><br>
+            <b><a href="{% url 'user_profile' participant.id %}">@{{ participant.username }}</a></b><br>
         {% endfor %}
     </div>
 
