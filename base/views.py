@@ -70,6 +70,7 @@ def home(request):
         rooms = rooms.filter(Q(name__icontains=q) |
                              Q(topic__name__icontains=q)|
                              Q(host__username__icontains=q))
+        messages = messages.filter(Q(room__topic__name__icontains=q))
 
     context = {
         'rooms': rooms,

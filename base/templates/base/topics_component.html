@@ -1,0 +1,5 @@
+<h2>Topics:</h2>
+<b><a href="/">All</a></b><br>
+{% for topic in topics %}
+    <b><a href="/?q={{ topic.name }}">{{ topic.name }}</a></b><br>
+{% endfor %}
