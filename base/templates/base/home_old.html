@@ -1,0 +1,25 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<style>
+    .main-container{
+        display: grid;
+        grid-template-columns: 1fr 3fr 1fr;
+    }
+</style>
+
+<div class="main-container">
+    <div class="topic-container">
+        {% include 'base/topics_component.html' %}
+    </div>
+
+    <div class="room-container">
+        {% include 'base/room_component.html' %}
+    </div>
+
+    <div class="activity-container">
+        {% include 'base/activity_component.html' %}
+    </div>
+</div>
+
+{% endblock content %}
