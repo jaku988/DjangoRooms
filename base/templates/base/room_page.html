@@ -2,31 +2,49 @@
 
 {% block content %}
 
-<div class="main-container">
-    @{{ room.host.username }}<br>
-    <h2>{{ room.name }}</h2>
-    <p>{{ room.description }}</p>
-</div>
-<div>
-    <h2>Discussion:</h2>
-    <span>
-        {% if request.user.is_authenticated %}
-        <form method="post">
-            {% csrf_token %}
-            <input type='text' name="msg_body" placeholder="Write your messages here..." />
-        </form>
-        {% endif %}
-    </span>
-</div>
-<div>
-    {% for message in messages %}
-        <div>
-            <b>@{{ message.user.username }}</b> - {{ message.created }}<br>
-            <p>{{ message.body }}</p>
-            <hr>
-        </div>
-    {% endfor %}
-</div>
+<style>
+.main-container{
+    display: grid;
+    grid-template-columns: 3fr 1fr ;
+}
+</style>
 
+<div class="main-container">
+    <div class="room-container">
+        @{{ room.host.username }}<br>
+        <h2>{{ room.name }}</h2>
+        <p>{{ room.description }}</p>
+        <h2>Discussion:</h2>
+        <span>
+            {% if request.user.is_authenticated %}
+            <form method="post">
+                {% csrf_token %}
+                <input type='text' name="msg_body" placeholder="Write your messages here..." />
+            </form>
+            {% endif %}
+        </span>
+        <div>
+            {% for message in messages %}
+                <div>
+                    {% if message.user == request.user %}
+                        <a href="{% url 'delete_message' message.id %}">Delete</a>
+                    {% endif %}
+                    <b>@{{ message.user.username }}</b> - {{ message.created }}<br>
+                    <p>{{ message.body }}</p>
+                    <hr>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="participant-container">
+        <h2>Participants</h2>
+        <hr>
+        {% for participant in participants %}
+            <b>@{{ participant.username }}</b><br>
+        {% endfor %}
+    </div>
+
+</div>
 
 {% endblock content %}

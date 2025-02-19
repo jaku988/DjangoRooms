@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import render, redirect
 from .forms import RoomForm
 from .models import Room, Topic, Message
@@ -83,6 +84,7 @@ def create_room(request):
         form = RoomForm(request.POST)
         if form.is_valid():
             room = form.save(commit=False)
+            room.participants.add(request.user)
             return redirect("home")
     else:
         form = RoomForm()
@@ -93,7 +95,11 @@ def create_room(request):
     return render(request, 'base/create_room.html', context)
 
 def room(request, pk):
-    room = Room.objects.get(id=pk)
+    try:
+        room = Room.objects.get(id=pk)
+    except Room.DoesNotExist:
+        raise Http404("Room does not exist")
+
     messages = room.message_set.all().order_by('-created')
     participants = room.participants.all()
 
@@ -101,6 +107,9 @@ def room(request, pk):
         message_body = request.POST.get('msg_body')
         if message_body:
             message = Message(room=room, user=request.user, body=message_body)
+            if request.user not in participants:
+                room.participants.add(request.user)
+
             message.save()
             return redirect('room', pk=room.id)
 
@@ -152,6 +161,24 @@ def delete_room(request, pk):
         room.delete()
         return redirect("home")
     context = {
-        'room': room,
+        'obj': room,
     }
-    return render(request, 'base/delete_room.html', context)
+    return render(request, 'base/delete.html', context)
+
+@login_required(login_url='login_page')
+def delete_message(request, pk):
+    message = Message.objects.get(id=pk)
+    room = message.room
+
+    if message.user != request.user:
+        return redirect('room', room.id)
+
+    if request.method == 'POST':
+        message.delete()
+        return redirect('room', room.id)
+
+    context={
+        'obj' : message
+    }
+    return render(request, 'base/delete.html', context)
+
