@@ -61,6 +61,7 @@ def logout_page(request):
 def home(request):
 
     rooms = Room.objects.all()
+    room_count = rooms.count()
     topics = Topic.objects.all()
     messages = Message.objects.all().order_by('-created')
 
@@ -76,36 +77,23 @@ def home(request):
         'rooms': rooms,
         'topics': topics,
         'messages' : messages,
+        'room_count' : room_count,
     }
     return render(request, 'base/home.html', context)
 
 def user_profile(request, pk):
     user = User.objects.get(id=pk)
     rooms = user.room_set.all()
+    room_count = rooms.count()
     messages = user.message_set.all()
     topics = Topic.objects.all()
     context = {'user' : user,
                'rooms' : rooms,
                'messages' : messages,
-               'topics' : topics}
+               'topics' : topics,
+               'room_count' : room_count,}
     return render(request, 'base/profile.html', context)
 
-
-@login_required(login_url='login_page')
-def create_room(request):
-    if request.method == 'POST':
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            room = form.save(commit=False)
-            room.participants.add(request.user)
-            return redirect("home")
-    else:
-        form = RoomForm()
-
-    context = {
-        'form': form,
-    }
-    return render(request, 'base/create_room.html', context)
 
 def room(request, pk):
     try:
@@ -115,6 +103,7 @@ def room(request, pk):
 
     messages = room.message_set.all().order_by('-created')
     participants = room.participants.all()
+    participant_count = participants.count()
 
     if request.method == 'POST':
         message_body = request.POST.get('msg_body')
@@ -130,40 +119,58 @@ def room(request, pk):
         'room': room,
         'messages': messages,
         'participants': participants,
+        'participant_count': participant_count,
     }
     return render(request, 'base/room_page.html', context)
 
 @login_required(login_url='login_page')
 def create_room(request):
     if request.method == 'POST':
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            room = form.save(commit=False)
-            room.host = request.user
-            room.save()
-            room.participants.set([request.user])
-            room.save()
-            return redirect("home")
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+
+        Room.objects.create(
+            host=request.user,
+            topic=topic,
+            name=request.POST.get('name'),
+            description=request.POST.get('description')
+        )
+
+        return redirect("home")
     else:
         form = RoomForm()
+
+    topics = Topic.objects.all()
     context = {
         'form': form,
+        'topics': topics,
     }
     return render(request, 'base/create_room.html', context)
 
 @login_required(login_url='login_page')
 def edit_room(request, pk):
     room = Room.objects.get(pk=pk)
+
+    if request.user != room.host:
+        return redirect('room', pk=pk)
+
     if request.method == 'POST':
-        form = RoomForm(request.POST, instance=room)
-        if form.is_valid():
-            room = form.save()
-            return redirect("home")
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+        room.name = request.POST.get('name')
+        room.topic = topic
+        room.description = request.POST.get('description')
+        room.save()
+        return redirect('room', pk=pk)
+
     else:
         form = RoomForm(instance=room)
+        topics = Topic.objects.all()
 
     context = {
         'form': form,
+        'topics': topics,
+        'room' : room,
     }
     return render(request, "base/create_room.html", context)
 
