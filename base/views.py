@@ -53,7 +53,7 @@ def register_page(request):
     }
     return render(request, 'base/login_page.html', context)
 
-@login_required(login_url='login_page')
+@login_required(login_url='login')
 def logout_page(request):
     logout(request)
     return redirect("home")
@@ -123,7 +123,7 @@ def room(request, pk):
     }
     return render(request, 'base/room_page.html', context)
 
-@login_required(login_url='login_page')
+@login_required(login_url='login')
 def create_room(request):
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
@@ -147,7 +147,7 @@ def create_room(request):
     }
     return render(request, 'base/create_room.html', context)
 
-@login_required(login_url='login_page')
+@login_required(login_url='login')
 def edit_room(request, pk):
     room = Room.objects.get(pk=pk)
 
@@ -174,7 +174,7 @@ def edit_room(request, pk):
     }
     return render(request, "base/create_room.html", context)
 
-@login_required(login_url='login_page')
+@login_required(login_url='login')
 def delete_room(request, pk):
     room = Room.objects.get(id=pk)
     if request.method == 'POST':
@@ -185,7 +185,7 @@ def delete_room(request, pk):
     }
     return render(request, 'base/delete.html', context)
 
-@login_required(login_url='login_page')
+@login_required(login_url='login')
 def delete_message(request, pk):
     message = Message.objects.get(id=pk)
     room = message.room
